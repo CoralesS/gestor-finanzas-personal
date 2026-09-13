@@ -2,21 +2,70 @@ package com.finanzas.core.controller;
 
 import com.finanzas.core.dto.CategoriaEntradaDTO;
 import com.finanzas.core.dto.CategoriaSalidaDTO;
+import com.finanzas.core.repository.CategoriaRepository;
+import com.finanzas.core.repository.MovimientoRepository;
 import com.finanzas.core.service.CategoriaService;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.List;
+//Etiqueta que define la URL del Controlador
+@WebServlet("/CategoriaController")
+public class CategoriaController extends HttpServlet {
 
-public class CategoriaController {
+    private CategoriaService categoriaService;
 
-    private final CategoriaService categoriaService;
+    //Metodos Servelet
+    @Override
+    public void init() throws ServletException {
+        CategoriaRepository catRepo = new CategoriaRepository();
+        MovimientoRepository movRepo = new MovimientoRepository();
+        this.categoriaService = new CategoriaService(catRepo, movRepo);
+    }
 
-    // Constructor
-    public CategoriaController(CategoriaService categoriaService) {
-        this.categoriaService = categoriaService;
+    // 4. Enrutador para Clics y URLs
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String accion = request.getParameter("accion");
+        if (accion == null) accion = "listar";
+
+        switch (accion) {
+            case "listar":
+                listarCategorias(request, response);
+                break;
+            case "eliminar":
+                eliminarCategoria(request, response);
+                break;
+            case "editar":
+                mostrarFormularioEditar(request, response);
+                break;
+            case "seleccionar":
+                mostrarMatrizCategorias(request, response);
+                break;
+            default:
+                listarCategorias(request, response);
+        }
+    }
+
+    // Enrutador para Formularios
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String accion = request.getParameter("accion");
+
+        switch (accion) {
+            case "crear":
+                crearCategoria(request, response);
+                break;
+            case "actualizar":
+                actualizarCategoria(request, response);
+                break;
+            default:
+                response.sendRedirect("CategoriaController?accion=listar");
+        }
     }
 
     // Métodos
@@ -35,7 +84,9 @@ public class CategoriaController {
             // Pasar responsabilidad al Servicio
             categoriaService.crearCategoria(categoriaEntradaDTO);
 
-            response.sendRedirect("/listaCategorias.jsp?mensaje=exito");
+            // Redirigir al controlador con la acción listar, no al JSP directo
+            response.sendRedirect("CategoriaController?accion=listar&mensaje=exito");
+            //response.sendRedirect("/formularioCategoria.jsp?mensaje=exito");
         } catch (IOException e) {
             request.setAttribute("errorPantalla", e.getMessage());
             request.getRequestDispatcher("/formularioCategoria.jsp").forward(request, response);
@@ -74,7 +125,7 @@ public class CategoriaController {
             categoriaService.actualizarCategoria(id, categoriaEntradaDTO);
 
             // redirección a la tabla actualizada
-            response.sendRedirect("/ControladorServlet?accion=listar&mensaje=actualizado");
+            response.sendRedirect("/CategoriaController?accion=listar&mensaje=actualizado");
         }catch (NumberFormatException e) {
             request.setAttribute("error", "Error de seguridad: EL ID enviado no es un número válido");
         }catch (IllegalArgumentException e) {
@@ -89,17 +140,42 @@ public class CategoriaController {
 
             // delegar al servicio
             categoriaService.eliminarCategoria(id);
-            response.sendRedirect("ControladorServlet?accion=listar&mensaje=eliminado");
-        }catch (NumberFormatException e) {
-            request.setAttribute("error", "ID inválido");
-        } catch (IllegalStateException e){
-            // Atrapa el error si la categoria ya tiene movimientos
-            request.setAttribute("error", e.getMessage());
+            response.sendRedirect("/CategoriaController?accion=listar&mensaje=eliminado");
         } catch (IllegalArgumentException e) {
-            // atrapa si la categoria ya no existe
-            request.setAttribute("error", e.getMessage());
+            System.out.println("Bloqueo del Servicio: " + e.getMessage());
+            // alerta roja en la vista
+            response.sendRedirect("CategoriaController?accion=listar&error=categoria_en_uso");
+
+        } catch (Exception e) {
+            // Para cualquier otro error inesperado
+            response.sendRedirect("CategoriaController?accion=listar&error=fallo_eliminar");
         }
     }
 
+    public void mostrarFormularioEditar(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
 
+            CategoriaSalidaDTO catSalidaDTO = categoriaService.obtenerCategoriaID(id);
+            request.setAttribute("categoria", catSalidaDTO);
+
+            request.getRequestDispatcher("/editarCategoria.jsp").forward(request, response);
+        } catch (Exception e) {
+            response.sendRedirect("CategoriaController?accion=listar&error=fallo_edicion");
+        }
+    }
+
+    public void mostrarMatrizCategorias(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            List<CategoriaSalidaDTO> lista = categoriaService.obtenerCategorias();
+
+            request.setAttribute("categorias", lista);
+
+            // forward hacia la nueva vista
+            request.getRequestDispatcher("/seleccionarCategoria.jsp").forward(request, response);
+        } catch (Exception e) {
+            System.out.println("Error al cargar la matriz: " + e.getMessage());
+            response.sendRedirect("index.jsp?error=fallo_cargar");
+        }
+    }
 }
