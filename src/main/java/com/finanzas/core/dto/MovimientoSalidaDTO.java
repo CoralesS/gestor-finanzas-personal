@@ -3,7 +3,6 @@ package com.finanzas.core.dto;
 import java.time.LocalDate;
 
 public class MovimientoSalidaDTO {
-
     // Atributos
     private int id;
     private String concepto;
