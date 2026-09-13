@@ -87,4 +87,18 @@ public class CategoriaService {
         categoriaRepository.eliminar(catEntidad.getId());
 
     }
+
+    public CategoriaSalidaDTO obtenerCategoriaID(int id) {
+
+        Categoria catEntidad = categoriaRepository.obtenerCategoriaID(id);
+        CategoriaSalidaDTO catDTO = new CategoriaSalidaDTO();
+
+        // Mapeo al dto
+        catDTO.setId(catEntidad.getId());
+        catDTO.setNombre(catEntidad.getNombre());
+        catDTO.setDescripcion(catEntidad.getDescripcion());
+
+        return catDTO;
+    }
+
 }
