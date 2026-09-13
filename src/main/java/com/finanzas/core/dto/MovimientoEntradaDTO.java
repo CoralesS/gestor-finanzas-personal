@@ -5,6 +5,7 @@ import java.time.LocalDate;
 public class MovimientoEntradaDTO {
 
     // Atributos
+    private  int id;
     private String concepto;
     private LocalDate fecha;
     private double monto;
@@ -41,5 +42,13 @@ public class MovimientoEntradaDTO {
 
     public void setIdcategoria(int idcategoria) {
         this.idcategoria = idcategoria;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
