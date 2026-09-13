@@ -40,6 +40,7 @@ public class MovimientoService {
         for (Movimiento movimiento : listaMovimientos) {
             MovimientoSalidaDTO dto = new MovimientoSalidaDTO();
 
+            dto.setId(movimiento.getId());
             dto.setConcepto(movimiento.getConcepto());
             dto.setFecha(movimiento.getFecha());
             dto.setMonto(movimiento.getMonto());
@@ -63,4 +64,41 @@ public class MovimientoService {
         return total;
     }
 
+    public void eliminarMovimiento(int id) {
+        movRepository.eliminar(id);
+    }
+
+    public void actualizarMovimiento(MovimientoEntradaDTO dto) throws IllegalArgumentException {
+
+        if (dto.getConcepto() == null) {
+            throw new IllegalArgumentException();
+        }
+
+        Movimiento movimiento = new Movimiento();
+
+        movimiento.setConcepto(dto.getConcepto());
+        movimiento.setMonto(dto.getMonto());
+        movimiento.setFecha(dto.getFecha());
+        movimiento.setId(dto.getId());
+
+        movRepository.actualizar(movimiento);
+    }
+
+    public MovimientoSalidaDTO obtenerMovimientoPorID(int id) throws IllegalArgumentException {
+
+        Movimiento movimiento = movRepository.obtenerMovimientoPorID(id);
+
+        if (movimiento == null) {
+            throw new IllegalArgumentException();
+        }
+
+        // mapeo de salida
+        MovimientoSalidaDTO dto = new MovimientoSalidaDTO();
+        dto.setId(movimiento.getId());
+        dto.setConcepto(movimiento.getConcepto());
+        dto.setFecha(movimiento.getFecha());
+        dto.setMonto(movimiento.getMonto());
+
+        return dto;
+    }
 }
