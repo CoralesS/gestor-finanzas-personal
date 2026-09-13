@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class MovimientoSalidaDTO {
     // Atributos
-    private int id;
+    private int id; // id salida a la web
     private String concepto;
     private LocalDate fecha;
     private double monto;
