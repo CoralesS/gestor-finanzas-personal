@@ -42,7 +42,7 @@ public class MovimientoRepository {
 
     }
     public void eliminar(int id) {
-        String sql = "DELETE FROM movimiento WHERE id_categoria = ?";
+        String sql = "DELETE FROM movimiento WHERE id_movimiento = ?";
 
         try (Connection conexion = ConexionBD.getConnection();
             PreparedStatement pstmt = conexion.prepareStatement(sql)){
@@ -61,43 +61,25 @@ public class MovimientoRepository {
     }
 
     public void actualizar(Movimiento movimiento) {
-        String sql = "UPDATE movimiento SET mov_fecha = ?, mov_monto = ?, id_categoria = ? WHERE id_movimiento = ?";
+        String sql = "UPDATE movimiento SET mov_concepto = ?, mov_fecha = ?, mov_monto = ? WHERE id_movimiento = ?";
 
         try(Connection conexion = ConexionBD.getConnection();
             PreparedStatement pstmt = conexion.prepareStatement(sql)) {
 
-            pstmt.setDate(1, java.sql.Date.valueOf(movimiento.getFecha()));
-            pstmt.setDouble(2, movimiento.getMonto());
-            pstmt.setInt(3, movimiento.getIdCategoria());
+            pstmt.setString(1,movimiento.getConcepto());
+            pstmt.setDate(2, java.sql.Date.valueOf(movimiento.getFecha()));
+            pstmt.setDouble(3, movimiento.getMonto());
             pstmt.setInt(4, movimiento.getId());
+
+            int filas = pstmt.executeUpdate();
+
+            if (filas > 0) {
+                System.out.println("Registro actualizado exitosamente");
+            }
 
         }catch (SQLException e){
             System.out.println("Error al actualizar el registro" + e.getMessage());
         }
-    }
-
-    public Movimiento obtener(int id) {
-        String sql = "SELECT * FROM movimiento WHERE id_movimiento = ?";
-        Movimiento movimiento = null;
-        try(Connection conexion = ConexionBD.getConnection();
-            PreparedStatement pstmt = conexion.prepareStatement(sql)){
-
-            pstmt.setInt(1, id);
-            ResultSet rs = pstmt.executeQuery();
-
-            // Extracción de datos
-            int idMov = rs.getInt("id_movimiento");
-            String concepto =  rs.getString("mov_concepto");
-            double monto = rs.getDouble("mov_monto");
-            LocalDate fecha = rs.getDate("mov_fecha").toLocalDate();
-            int idCategoria = rs.getInt("id_categoria");
-
-            // crear el objeto
-            movimiento = new Movimiento(idMov,concepto, monto, fecha, idCategoria);
-        }catch (SQLException e){
-            System.out.println("Error al obtener el registro" + e.getMessage());
-        }
-        return movimiento;
     }
 
     public List<Movimiento> obtenerTodos() {
@@ -133,11 +115,14 @@ public class MovimientoRepository {
         boolean existeFila = false;
 
         try(Connection conexion = ConexionBD.getConnection();
-            PreparedStatement pstmt = conexion.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery()) {
+            PreparedStatement pstmt = conexion.prepareStatement(sql);) {
 
-            if (rs.next()) {
-                existeFila = true;
+            pstmt.setInt(1, idCategoria);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    existeFila = true;
+                }
             }
 
         }catch (SQLException e){
@@ -171,6 +156,32 @@ public class MovimientoRepository {
             System.out.println("Error al obtener el registro" + e.getMessage());
         }
         return movimientos;
+    }
+
+    public Movimiento obtenerMovimientoPorID(int idMovimiento) {
+        String sql = "SELECT * FROM movimiento WHERE id_movimiento = ?";
+        Movimiento movimiento = null;
+
+        try(Connection conexion = ConexionBD.getConnection();
+            PreparedStatement pstmt = conexion.prepareStatement(sql)) {
+
+            pstmt.setInt(1, idMovimiento);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()){
+                int idMov = rs.getInt("id_movimiento");
+                String concepto =  rs.getString("mov_concepto");
+                double monto = rs.getDouble("mov_monto");
+                LocalDate fecha = rs.getDate("mov_fecha").toLocalDate();
+                int idCat =  rs.getInt("id_categoria");
+
+                movimiento = new Movimiento(idMov,concepto, monto, fecha, idCat);
+
+            }
+        }catch (SQLException e){
+            System.out.println("Error al obtener el registro" + e.getMessage());
+        }
+        return movimiento;
     }
 
 }
