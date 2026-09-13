@@ -87,7 +87,7 @@ public class CategoriaService {
         categoriaRepository.eliminar(catEntidad.getId());
 
     }
-
+    //obtener categoria por ID
     public CategoriaSalidaDTO obtenerCategoriaID(int id) {
 
         Categoria catEntidad = categoriaRepository.obtenerCategoriaID(id);
