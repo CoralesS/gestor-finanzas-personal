@@ -53,17 +53,6 @@ public class MovimientoService {
     }
 
 
-    public double calcularBalanceTotal() {
-
-        List<Movimiento> movimientos = movRepository.obtenerTodos();
-        double total = 0;
-        for (Movimiento movimiento : movimientos) {
-            total += movimiento.getMonto();
-        }
-
-        return total;
-    }
-
     public void eliminarMovimiento(int id) {
         movRepository.eliminar(id);
     }
