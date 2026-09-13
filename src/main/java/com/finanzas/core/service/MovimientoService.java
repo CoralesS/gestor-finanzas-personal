@@ -80,7 +80,6 @@ public class MovimientoService {
         movimiento.setMonto(dto.getMonto());
         movimiento.setFecha(dto.getFecha());
         movimiento.setId(dto.getId());
-
         movRepository.actualizar(movimiento);
     }
 
