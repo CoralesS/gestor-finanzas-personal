@@ -11,7 +11,6 @@ import java.util.List;
 public class MovimientoService {
 
     private MovimientoRepository movRepository;
-
     // Constructor
     public MovimientoService(MovimientoRepository movRepository) {
         this.movRepository = movRepository;
